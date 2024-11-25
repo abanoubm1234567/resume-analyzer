@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import SpinnerAPI from 'src/lib/spinnerAPI';
 import './DashboardPage.css'
 import PrivateRoute from 'src/components/PrivateRoute'
+import { useLocation } from 'react-router-dom';
 
 
 /* const DashboardPage = () => {
@@ -24,7 +25,7 @@ const DashboardPage = () => {
       #}
     </>
   )
-} 
+}
 */
 
 const DashboardPage = () => {
@@ -36,6 +37,9 @@ const DashboardPage = () => {
     setData(fetchedData);
     setLoadingFinished(true); // Set loading as finished after data is fetched
   };
+
+  //const path = useLocation();
+  //console.log(path)
 
   return (
     <div className="dashboard-container">
@@ -49,7 +53,7 @@ const DashboardPage = () => {
           <div className="section">
             <h2>Resume Fit Score</h2>
             <div className="fit-score-bar">
-            <div className="fit-score-fill" style={{ width: `${data?.fitScore || 0}%` }}></div> 
+            <div className="fit-score-fill" style={{ width: `${data?.fitScore || 0}%` }}></div>
             </div>
             <p className="font-bold text-green-500">{data?.fitScore}% Match</p>
           </div>

@@ -57,7 +57,7 @@ const LoginPage = () => {
         <h1 className="title">Ace Your Application!</h1>
         <Form onSubmit={onSubmit} config={{ mode: 'onBlur' }}>
           <div className="input-wrapper">
-            <Label name="email" errorClassName="error">
+            <Label name="Email" errorClassName="error">
               Email
             </Label>
             <TextField
@@ -83,7 +83,7 @@ const LoginPage = () => {
           </div>
 
           <div className="separator"></div>
-          <Submit className="button">Log In</Submit>
+          <Submit className="button" role='login' >Log In</Submit>
           <div className="separator"></div>
           <button
             type="button"
