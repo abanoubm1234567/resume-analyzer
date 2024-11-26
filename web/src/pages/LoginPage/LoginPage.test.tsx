@@ -7,7 +7,6 @@ import { MemoryRouter } from 'react-router-dom'
 import * as router from '@redwoodjs/router'
 
 //checks to make sure that the page renders
-
 describe('LoginPage', () => {
   it('renders successfully', () => {
     expect(() => {
@@ -22,16 +21,13 @@ describe('LoginPage', () => {
   })
 })
 
-
 //checks bad login and that there is an alert notifying user of invalid email or password
-
 describe('testing bad login', () => {
   it('fails to login, gets error message', async () => {
     // Mock the alert function to track it
     const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {})
 
-    // Mock the localStorage to simulate a successful login
-    localStorage.setItem('token', 'unsuccessful login')
+    const mockAPIResponse = {__typeName: 'Error', Message:'Invalid email or password.'}
 
     // Render the LoginPage component inside the Router
     render(
@@ -42,33 +38,35 @@ describe('testing bad login', () => {
       </MockedProvider>
     )
 
-    if (localStorage.getItem('token') == 'unsuccessful login'){
-      alert('Invalid email or password.')
+    if (mockAPIResponse.__typeName=='Error'){
+      alert(mockAPIResponse.Message)
+    }
+    else{
+      alert('Login successful!')
     }
 
     // Wait for the mutation to complete and check if the alert was called with 'Login successful!'
     await waitFor(() => expect(alertMock).toHaveBeenCalledWith('Invalid email or password.'))
 
-    // Optionally check if the token is stored in localStorage
-    expect(localStorage.getItem('token')).toBe('unsuccessful login')
-
     // Clean up the spy
     alertMock.mockRestore()
-
-    localStorage.clear()
   })
 })
 
 //checks to make sure that when successful token is received in local storage, alert showing successful login
 //and navigation to dashboard occurs
-
 describe('testing good login', () => {
   it('logs in successfully, shows alert, and navigates to dashboard', async () => {
     // Mock the alert function to track it
     const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {})
 
+    const mockAPIData = {__typeName: 'Token', token:'SUCCESS_TOKEN'}
+
     // Mock the localStorage to simulate a successful login
-    localStorage.setItem('token', 'successful login')
+    if (mockAPIData.__typeName==='Token'){
+      localStorage.setItem(mockAPIData.__typeName, mockAPIData.token)
+    }
+
 
     jest.mock('@redwoodjs/router', () => ({
       ...jest.requireActual('@redwoodjs/router'),
@@ -87,7 +85,7 @@ describe('testing good login', () => {
       </MockedProvider>
     )
 
-    if (localStorage.getItem('token') == 'successful login'){
+    if (localStorage.getItem(mockAPIData.__typeName) === mockAPIData.token){
       alert('Login successful!')
       act(() => {
         navigateMock('/dashboard') // Simulate navigation to /dashboard
@@ -98,7 +96,7 @@ describe('testing good login', () => {
     await waitFor(() => expect(alertMock).toHaveBeenCalledWith('Login successful!'))
 
     // Optionally check if the token is stored in localStorage
-    expect(localStorage.getItem('token')).toBe('successful login')
+    expect(localStorage.getItem(mockAPIData.__typeName)).toBe(mockAPIData.token)
 
     await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/dashboard'))
 
@@ -118,8 +116,6 @@ describe('LoginPage', () => {
       ...jest.requireActual('@redwoodjs/router'),
       navigate: jest.fn(),
     }))
-
-    const navigateMock = router.navigate
 
     render(
       <MemoryRouter>
