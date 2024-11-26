@@ -1,10 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@redwoodjs/testing/web'
 import { MockedProvider } from '@apollo/client/testing'
 import { Router, navigate } from '@redwoodjs/router'
 import LoginPage from './LoginPage'
-import { LocationProvider } from '@redwoodjs/router'
 import { act } from 'react'
-
+import { MemoryRouter } from 'react-router-dom'
+import * as router from '@redwoodjs/router'
 
 //checks to make sure that the page renders
 
@@ -19,6 +19,43 @@ describe('LoginPage', () => {
       </MockedProvider>
       )
     }).not.toThrow()
+  })
+})
+
+
+//checks bad login and that there is an alert notifying user of invalid email or password
+
+describe('testing bad login', () => {
+  it('fails to login, gets error message', async () => {
+    // Mock the alert function to track it
+    const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {})
+
+    // Mock the localStorage to simulate a successful login
+    localStorage.setItem('token', 'unsuccessful login')
+
+    // Render the LoginPage component inside the Router
+    render(
+      <MockedProvider>
+        <Router>
+          <LoginPage />
+        </Router>
+      </MockedProvider>
+    )
+
+    if (localStorage.getItem('token') == 'unsuccessful login'){
+      alert('Invalid email or password.')
+    }
+
+    // Wait for the mutation to complete and check if the alert was called with 'Login successful!'
+    await waitFor(() => expect(alertMock).toHaveBeenCalledWith('Invalid email or password.'))
+
+    // Optionally check if the token is stored in localStorage
+    expect(localStorage.getItem('token')).toBe('unsuccessful login')
+
+    // Clean up the spy
+    alertMock.mockRestore()
+
+    localStorage.clear()
   })
 })
 
@@ -72,38 +109,34 @@ describe('testing good login', () => {
   })
 })
 
-//checks bad login and that there is an alert notifying user of invalid email or password
 
-describe('testing bad login', () => {
-  it('fails to login, gets error message', async () => {
-    // Mock the alert function to track it
-    const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {})
+//Tests to make sure user is directed to sign up page when clicking on New User button
+describe('LoginPage', () => {
+  it('makes sure the homepage is directed to upon clicking new user', async () => {
 
-    // Mock the localStorage to simulate a successful login
-    localStorage.setItem('token', 'unsuccessful login')
+    jest.mock('@redwoodjs/router', () => ({
+      ...jest.requireActual('@redwoodjs/router'),
+      navigate: jest.fn(),
+    }))
 
-    // Render the LoginPage component inside the Router
+    const navigateMock = router.navigate
+
     render(
-      <MockedProvider>
-        <Router>
-          <LoginPage />
-        </Router>
-      </MockedProvider>
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
     )
 
-    if (localStorage.getItem('token') == 'unsuccessful login'){
-      alert('Invalid email or password.')
-    }
+    const newUserButton = await screen.findByTestId("new-user-button")
 
-    // Wait for the mutation to complete and check if the alert was called with 'Login successful!'
-    await waitFor(() => expect(alertMock).toHaveBeenCalledWith('Invalid email or password.'))
+    fireEvent.click(newUserButton)
 
-    // Optionally check if the token is stored in localStorage
-    expect(localStorage.getItem('token')).toBe('unsuccessful login')
 
-    // Clean up the spy
-    alertMock.mockRestore()
+    await waitFor(() => {
+      expect(window.location.href).toContain('/') //checking the button leads user to root
+    })
 
-    localStorage.clear()
+    jest.clearAllMocks()
+
   })
 })
